@@ -5,9 +5,14 @@ import ca.ubc.cs317.dict.model.Definition;
 import ca.ubc.cs317.dict.model.MatchingStrategy;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static ca.ubc.cs317.dict.net.DictStringParser.splitAtoms;
 
 /**
  * Created by Jonatan on 2017-09-09.
@@ -15,6 +20,9 @@ import java.util.*;
 public class DictionaryConnection {
 
     private static final int DEFAULT_PORT = 2628;
+    Socket socket;
+    BufferedReader input;
+    PrintWriter output;
 
     /** Establishes a new connection with a DICT server using an explicit host and port number, and handles initial
      * welcome messages.
@@ -25,8 +33,21 @@ public class DictionaryConnection {
      * don't match their expected value.
      */
     public DictionaryConnection(String host, int port) throws DictConnectionException {
+        try {
+            this.socket = new Socket(host, port);
+            this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.output = new PrintWriter(socket.getOutputStream(), true);
 
-        // TODO Add your code here
+            String response = input.readLine();
+
+            if(response.charAt(0) == '4' || response.charAt(0) == '5' ) {
+                throw new DictConnectionException();
+            }
+            System.out.println(response);
+            System.out.println("Server connected");
+        } catch (Exception e) {
+           throw new DictConnectionException();
+        }
     }
 
     /** Establishes a new connection with a DICT server using an explicit host, with the default DICT port number, and
@@ -45,8 +66,17 @@ public class DictionaryConnection {
      *
      */
     public synchronized void close() {
-
-        // TODO Add your code here
+        try {
+            System.out.println("Disconnecting server...");
+            output.println("QUIT");
+            System.out.println(input.readLine());
+            input.close();
+            output.close();
+            socket.close();
+            System.out.println("Server disconnected");
+        } catch (Exception e) {
+            System.out.println("Error");
+        }
     }
 
     /** Requests and retrieves all definitions for a specific word.
@@ -61,9 +91,17 @@ public class DictionaryConnection {
      */
     public synchronized Collection<Definition> getDefinitions(String word, Database database) throws DictConnectionException {
         Collection<Definition> set = new ArrayList<>();
-
-        // TODO Add your code here
-
+//        //StringBuilder response = new StringBuilder();
+//        String command = "DEFINE" + " " + database.getName() + " " + word;
+//        System.out.println("command");
+//        output.println(command);
+//        try {
+//            String response = input.lines().collect(Collectors.joining());
+//            System.out.println(response);
+//        } catch (Exception e) {
+//            System.out.println(e.getMessage());
+//            throw new DictConnectionException();
+//        }
         return set;
     }
 
