@@ -1,1 +1,1 @@
-# cpsc-317-dictionary
+# CPSC 317 Dictionary Client
